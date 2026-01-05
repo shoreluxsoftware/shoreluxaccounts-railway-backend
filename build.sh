@@ -4,3 +4,6 @@ set -o errexit
 pip install -r requirements.txt
 python manage.py collectstatic --noinput
 python manage.py migrate
+
+mkdir -p /data/media
+mkdir -p /data/staticfiles
