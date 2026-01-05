@@ -182,11 +182,13 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join("/data", "media")
 # MEDIA_ROOT = BASE_DIR / 'media'
 
+DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 if not DEBUG:
-    MEDIA_URL = "https://shoreluxaccounts-production.up.railway.app/media/"
+    MEDIA_URL = "https://web-production-ce489.up.railway.app/media/"
 else:
     MEDIA_URL = "/media/"
 
