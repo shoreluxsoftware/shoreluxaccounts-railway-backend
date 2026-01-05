@@ -39,7 +39,7 @@ if DEBUG:
     CORS_ALLOW_ALL_ORIGINS = True
 else:
     CORS_ALLOWED_ORIGINS = [
-        "https://shoreluxaccounts-railway-frontend.railway.app",
+        "https://shoreluxaccounts-production.up.railway.app",
         "https://web-production-ce489.up.railway.app",
         "http://localhost:3000",
         "http://localhost:8000",
