@@ -32,14 +32,26 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 SECRET_KEY = "django-insecure-g5_j2896(@c743wc-%$zty-yi=fdvth-h+0kbiklt7l-yupw)8"
 
+# CORS - which domains can make browser requests from frontend
 DEBUG = os.environ.get("DJANGO_DEBUG") == "True"
 
-ALLOWED_HOSTS = os.getenv(
-    "DJANGO_ALLOWED_HOSTS",
-    "localhost,127.0.0.1"
-).split(",")
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+else:
+    CORS_ALLOWED_ORIGINS = [
+        "https://shoreluxaccounts-railway-frontend.railway.app",
+        "https://web-production-ce489.up.railway.app",
+        "http://localhost:3000",
+        "http://localhost:8000",
+    ]
 
-
+# ALLOWED_HOSTS - which domains can request your backend
+ALLOWED_HOSTS = [
+    "web-production-ce489.up.railway.app",
+    "localhost",
+    "127.0.0.1",
+    ".railway.app",
+]
 
 # Application definition
 
@@ -74,14 +86,8 @@ MIDDLEWARE = [
 ]
 
 # ==========================================
-# CORS CONFIGURATION - FIXED FOR LOCALHOST
+# ALLOWED_HOSTS & CORS CONFIGURATION
 # ==========================================
-CORS_ALLOWED_ORIGINS = [
-    # "https://your-react-app.railway.app",
-    "https://web-production-ce489.up.railway.app",
-]
-
-CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -96,6 +102,7 @@ CORS_ALLOW_HEADERS = [
     "x-csrftoken",
     "x-requested-with",
 ]
+
 
 ROOT_URLCONF = 'shorelux.urls'
 
