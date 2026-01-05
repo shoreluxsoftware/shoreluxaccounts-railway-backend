@@ -29,17 +29,6 @@ staticfiles/
 !.env.example
 
 # ===============================
-# Celery / Redis
-# ===============================
-celerybeat-schedule
-celerybeat-schedule.db
-celerybeat-schedule.dat
-celerybeat-schedule.dir
-celerybeat-schedule.bak
-
-dump.rdb
-
-# ===============================
 # Cache & Temp
 # ===============================
 *.cache

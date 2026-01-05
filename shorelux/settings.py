@@ -32,8 +32,7 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = [
     "localhost",
-    "127.0.0.1",
-    'shoreluxaccounts-backend.onrender.com'
+    "127.0.0.1"
 ]
 
 
