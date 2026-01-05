@@ -76,6 +76,10 @@ MIDDLEWARE = [
 # ==========================================
 # CORS CONFIGURATION - FIXED FOR LOCALHOST
 # ==========================================
+CORS_ALLOWED_ORIGINS = [
+    # "https://your-react-app.railway.app",
+    "https://web-production-ce489.up.railway.app",
+]
 
 CORS_ALLOW_ALL_ORIGINS = True
 
