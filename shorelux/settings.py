@@ -25,12 +25,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-SECRET_KEY = os.getenv("SECRET_KEY", "unsafe-secret-for-dev-only")
+# SECRET_KEY = os.getenv("SECRET_KEY", "unsafe-secret-for-dev-only")
+# DEBUG = os.getenv('DEBUG', 'False') == 'True'
+# ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
-DEBUG = os.getenv('DEBUG', 'False') == 'True'
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 
+DEBUG = os.environ.get("DJANGO_DEBUG") == "True"
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",")
 
 
 
@@ -251,31 +254,28 @@ LOGGING = {
 }
 
 # ==========================================
-# EMAIL CONFIGURATION
-# ==========================================
-
-
-BREVO_API_KEY = os.environ.get("BREVO_API_KEY")
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL")
-ALERT_EMAIL = os.environ.get("ALERT_EMAIL")
-
-
-
-# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-# EMAIL_HOST = "smtp.gmail.com"
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_USE_SSL = False
-
-# EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
-# EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
-# DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
-# ALERT_EMAIL = os.getenv("ALERT_EMAIL")
-
-# ==========================================
 # WEBSITE BOOKING API CONFIGURATION
 # ==========================================
 
 WEBSITE_API_KEY = os.getenv("WEBSITE_API_KEY")
 WEBSITE_FETCH_API_KEY = os.getenv("WEBSITE_FETCH_API_KEY")
 WEBSITE_BOOKING_API_URL = os.getenv("WEBSITE_BOOKING_API_URL")
+
+
+# ==========================================
+# EMAIL CONFIGURATION
+# ==========================================
+
+BREVO_API_KEY = os.environ.get("BREVO_API_KEY")
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL")
+ALERT_EMAIL = os.environ.get("ALERT_EMAIL")
+
+EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND")
+EMAIL_HOST = os.environ.get("EMAIL_HOST")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS") == "True"
+
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+
+# ==========================================
