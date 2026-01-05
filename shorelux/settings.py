@@ -182,6 +182,11 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join("/data", "media")
 # MEDIA_ROOT = BASE_DIR / 'media'
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+
+SECURE_SSL_REDIRECT = True
+
 AUTH_USER_MODEL = 'admin_management.User'
 
 # ==========================================
