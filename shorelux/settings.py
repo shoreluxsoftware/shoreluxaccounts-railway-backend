@@ -274,7 +274,7 @@ BREVO_API_KEY = os.environ.get("BREVO_API_KEY")
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL")
 ALERT_EMAIL = os.environ.get("ALERT_EMAIL")
 
-EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND")
+# EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND")
 EMAIL_HOST = os.environ.get("EMAIL_HOST")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
 EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS") == "True"
