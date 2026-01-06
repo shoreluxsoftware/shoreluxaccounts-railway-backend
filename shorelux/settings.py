@@ -173,6 +173,14 @@ STATIC_ROOT = "/app/staticfiles"
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
+# Add these WhiteNoise configs
+WHITENOISE_AUTOREFRESH = True
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_MIMETYPES = {
+    '.webp': 'image/webp',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+}
 # ==========================================
 # MEDIA FILES CONFIGURATION
 # ==========================================
@@ -183,11 +191,6 @@ DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
-if not DEBUG:
-    MEDIA_URL = "/media/"  # Django serves it
-else:
-    MEDIA_URL = "/media/"
 
 
 # Default primary key field type
