@@ -15,6 +15,7 @@ from datetime import timedelta
 from corsheaders.defaults import default_headers
 
 import os
+os.makedirs("/app/media", exist_ok=True)
 from dotenv import load_dotenv
 
 load_dotenv()
