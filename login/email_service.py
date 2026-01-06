@@ -1,5 +1,4 @@
 # login/email_service.py
-
 import sib_api_v3_sdk
 from sib_api_v3_sdk.rest import ApiException
 from django.conf import settings
@@ -38,13 +37,13 @@ class EmailNotificationService:
             )
 
             self.client.send_transac_email(email)
-            logger.info(f"📧 Email sent via Brevo API: {subject}")
+            logger.info(f"📧 Email sent via Brevo API: {subject} to {recipient_email}")
 
         except ApiException as e:
             logger.error(f"❌ Brevo API error: {e}")
 
     def send_login_alert(self, username, staff_code, login_datetime):
-        """Send login alert email"""
+        """Send login alert email to DEFAULT_FROM_EMAIL"""
         subject = f"🔐 Login Alert - {username}"
         message = f"""
 Login Alert Notification
@@ -55,10 +54,10 @@ Login Time: {login_datetime}
 
 If this wasn't you, please contact support immediately.
         """
-        self.send_email(subject, message)
+        self.send_email(subject, message, to_email=settings.DEFAULT_FROM_EMAIL)
 
     def send_otp(self, email, otp_code):
-        """Send OTP email to ALERT_EMAIL"""
+        """Send OTP email to DEFAULT_FROM_EMAIL"""
         subject = "🔐 Your OTP Code"
         message = f"""
 Your One-Time Password (OTP)
@@ -70,11 +69,10 @@ Do not share this code with anyone.
 
 If you didn't request this, please ignore this email.
         """
-        # Send to ALERT_EMAIL (same as login alert)
-        self.send_email(subject, message, to_email=settings.ALERT_EMAIL)
+        self.send_email(subject, message, to_email=settings.DEFAULT_FROM_EMAIL)
         
     def send_checkin_reminder(self, booking):
-        """Send check-in reminder email"""
+        """Send check-in reminder email to ALERT_EMAIL"""
         subject = "⏰ Check-in Reminder (6 Hours)"
         message = f"""
 CHECK-IN REMINDER
@@ -87,8 +85,97 @@ Amount: ₹{booking.booking_price}
 
 This is a 6-hour advance reminder.
         """
-        # Send to ALERT_EMAIL (same as login alerts)
         self.send_email(subject, message, to_email=settings.ALERT_EMAIL)
+
+# import sib_api_v3_sdk
+# from sib_api_v3_sdk.rest import ApiException
+# from django.conf import settings
+# import logging
+
+# logger = logging.getLogger(__name__)
+
+
+# class EmailNotificationService:
+
+#     def __init__(self):
+#         # DEBUG: Check if API key is loaded
+#         if not settings.BREVO_API_KEY:
+#             logger.error("❌ BREVO_API_KEY is NOT set in environment variables!")
+#         else:
+#             key_preview = settings.BREVO_API_KEY[:20] + "..." if len(settings.BREVO_API_KEY) > 20 else settings.BREVO_API_KEY
+#             logger.info(f"✅ BREVO_API_KEY loaded: {key_preview}")
+        
+#         config = sib_api_v3_sdk.Configuration()
+#         config.api_key['api-key'] = settings.BREVO_API_KEY
+
+#         self.client = sib_api_v3_sdk.TransactionalEmailsApi(
+#             sib_api_v3_sdk.ApiClient(config)
+#         )
+
+#     def send_email(self, subject, message, to_email=None):
+#         """Generic email sender"""
+#         try:
+#             recipient_email = to_email or settings.ALERT_EMAIL
+            
+#             email = sib_api_v3_sdk.SendSmtpEmail(
+#                 to=[{"email": recipient_email}],
+#                 sender={"email": settings.DEFAULT_FROM_EMAIL, "name": "Shorelux"},
+#                 subject=subject,
+#                 text_content=message,
+#             )
+
+#             self.client.send_transac_email(email)
+#             logger.info(f"📧 Email sent via Brevo API: {subject}")
+
+#         except ApiException as e:
+#             logger.error(f"❌ Brevo API error: {e}")
+
+#     def send_login_alert(self, username, staff_code, login_datetime):
+#         """Send login alert email"""
+#         subject = f"🔐 Login Alert - {username}"
+#         message = f"""
+# Login Alert Notification
+
+# User: {username}
+# Staff Code: {staff_code}
+# Login Time: {login_datetime}
+
+# If this wasn't you, please contact support immediately.
+#         """
+#         self.send_email(subject, message)
+
+#     def send_otp(self, email, otp_code):
+#         """Send OTP email to ALERT_EMAIL"""
+#         subject = "🔐 Your OTP Code"
+#         message = f"""
+# Your One-Time Password (OTP)
+
+# OTP Code: {otp_code}
+
+# This code will expire in 10 minutes.
+# Do not share this code with anyone.
+
+# If you didn't request this, please ignore this email.
+#         """
+#         # Send to ALERT_EMAIL (same as login alert)
+#         self.send_email(subject, message, to_email=settings.ALERT_EMAIL)
+        
+#     def send_checkin_reminder(self, booking):
+#         """Send check-in reminder email"""
+#         subject = "⏰ Check-in Reminder (6 Hours)"
+#         message = f"""
+# CHECK-IN REMINDER
+
+# Guest: {booking.guest_name}
+# Room: {booking.room_no}
+# Check-in Date: {booking.checkin_date}
+# Phone: {booking.phone_number}
+# Amount: ₹{booking.booking_price}
+
+# This is a 6-hour advance reminder.
+#         """
+#         # Send to ALERT_EMAIL (same as login alerts)
+#         self.send_email(subject, message, to_email=settings.ALERT_EMAIL)
 
 #     def send_checkin_reminder(self, booking):
 #         """Send check-in reminder email"""
