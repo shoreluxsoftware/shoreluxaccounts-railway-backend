@@ -41,5 +41,9 @@ urlpatterns = [
     path('login/', include('login.urls')),
 ]
 
-# ✅ SERVE MEDIA FILES IN BOTH DEV AND PRODUCTION
+# CRITICAL: Always serve media files
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# Optional: Also serve static in development
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

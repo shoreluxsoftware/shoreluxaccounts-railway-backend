@@ -75,9 +75,10 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'shorelux.middleware.ServeMediaFilesMiddleware', 
     'corsheaders.middleware.CorsMiddleware',  
     'django.middleware.security.SecurityMiddleware',
-    "whitenoise.middleware.WhiteNoiseMiddleware",
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -163,35 +164,47 @@ USE_I18N = True
 
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
 # ==========================================
-# STATIC FILES CONFIGURATION
+# STATIC & MEDIA FILES CONFIGURATION
 # ==========================================
+
 STATIC_URL = '/static/'
 STATIC_ROOT = "/app/staticfiles"
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# Add these WhiteNoise configs
-WHITENOISE_AUTOREFRESH = True
-WHITENOISE_USE_FINDERS = True
-WHITENOISE_MIMETYPES = {
-    '.webp': 'image/webp',
-    '.png': 'image/png',
-    '.jpg': 'image/jpeg',
-}
-# ==========================================
-# MEDIA FILES CONFIGURATION
-# ==========================================
+# Media files (user uploads)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = "/app/media"
 
 DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 
+# Ensure directories exist
+import os
+os.makedirs(MEDIA_ROOT, exist_ok=True)
+os.makedirs(STATIC_ROOT, exist_ok=True)
+
+# ==========================================
+# WHITENOISE CONFIGURATION - SERVE MEDIA
+# ==========================================
+
+# Allow WhiteNoise to serve media files too
+WHITENOISE_AUTOREFRESH = True
+WHITENOISE_USE_FINDERS = True
+
+# Tell WhiteNoise about MIME types for images
+WHITENOISE_MIMETYPES = {
+    '.webp': 'image/webp',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.gif': 'image/gif',
+    '.pdf': 'application/pdf',
+}
+
+# Proxy headers (for Railway's reverse proxy)
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
