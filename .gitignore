@@ -19,7 +19,7 @@ db.sqlite3
 staticfiles/
 
 # Media uploads (VERY IMPORTANT)
-# media/
+media/
 
 # ===============================
 # Environment Variables
