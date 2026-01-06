@@ -164,23 +164,19 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
-
-STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join("/app/media", "staticfiles")
-# STATIC_ROOT = BASE_DIR / "staticfiles"
+# ==========================================
+# STATIC FILES CONFIGURATION
+# ==========================================
+STATIC_URL = '/static/'
+STATIC_ROOT = "/app/staticfiles"
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
+# ==========================================
+# MEDIA FILES CONFIGURATION
+# ==========================================
 MEDIA_URL = '/media/'
-
-MEDIA_ROOT = os.path.join("/app/media", "media")
-# MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = "/app/media"
 
 DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 
@@ -188,9 +184,15 @@ USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 if not DEBUG:
-    MEDIA_URL = "https://web-production-ce489.up.railway.app/media/"
+    MEDIA_URL = "/media/"  # Django serves it
 else:
     MEDIA_URL = "/media/"
+
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 AUTH_USER_MODEL = 'admin_management.User'
