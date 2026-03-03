@@ -1013,31 +1013,86 @@ class UpdateSalaryExpenseAPIView(APIView):
 #------------------------------
 
 
+# class MonthlyLedgerSummaryAPIView(APIView):
+#     def get(self, request):
+#         account = request.query_params.get("account")
+#         year = request.query_params.get("year")
+
+#         queryset = LedgerEntry.objects.all()
+
+#         if account:
+#             queryset = queryset.filter(source_type=account)
+
+#         if year:
+#             queryset = queryset.filter(date__year=int(year))
+
+#         summary = (
+#             queryset
+#             .annotate(
+#                 year=ExtractYear("date"),
+#                 month=ExtractMonth("date")
+#             )
+#             .values("year", "month")
+#             .annotate(
+#                 total_credit=Sum("credit"),
+#                 total_debit=Sum("debit")
+#             )
+#             .order_by("year", "month")
+#         )
+
+#         month_names = {
+#             1: "January", 2: "February", 3: "March", 4: "April",
+#             5: "May", 6: "June", 7: "July", 8: "August",
+#             9: "September", 10: "October", 11: "November", 12: "December"
+#         }
+
+#         results = []
+#         for row in summary:
+#             results.append({
+#                 "year": row["year"],
+#                 "month": month_names[row["month"]],
+#                 "credit": float(row["total_credit"] or 0),
+#                 "debit": float(row["total_debit"] or 0),
+#             })
+
+#         return Response({
+#             "account": account,
+#             "results": results
+#         })
+        
+        
+########## without passing account ################
+
 class MonthlyLedgerSummaryAPIView(APIView):
     def get(self, request):
-        account = request.query_params.get("account")
+
         year = request.query_params.get("year")
 
-        queryset = LedgerEntry.objects.all()
+        if not year:
+            return Response(
+                {"error": "Year parameter is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-        if account:
-            queryset = queryset.filter(source_type=account)
+        try:
+            year = int(year)
+        except ValueError:
+            return Response(
+                {"error": "Year must be a valid number"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-        if year:
-            queryset = queryset.filter(date__year=int(year))
+        queryset = LedgerEntry.objects.filter(date__year=year)
 
         summary = (
             queryset
-            .annotate(
-                year=ExtractYear("date"),
-                month=ExtractMonth("date")
-            )
-            .values("year", "month")
+            .annotate(month=ExtractMonth("date"))
+            .values("month", "source_type")
             .annotate(
                 total_credit=Sum("credit"),
                 total_debit=Sum("debit")
             )
-            .order_by("year", "month")
+            .order_by("month", "source_type")
         )
 
         month_names = {
@@ -1047,15 +1102,17 @@ class MonthlyLedgerSummaryAPIView(APIView):
         }
 
         results = []
+
         for row in summary:
             results.append({
-                "year": row["year"],
-                "month": month_names[row["month"]],
+                "year": year,
+                "month": month_names.get(row["month"]),
+                "source_type": row["source_type"],
                 "credit": float(row["total_credit"] or 0),
                 "debit": float(row["total_debit"] or 0),
             })
 
         return Response({
-            "account": account,
+            "year": year,
             "results": results
         })

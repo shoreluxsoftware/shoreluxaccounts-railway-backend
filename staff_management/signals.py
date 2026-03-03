@@ -81,175 +81,175 @@ def booking_pre_delete(sender, instance, **kwargs):
     _delete_existing_entries("booking", instance.id)
 
 
-# import logging
-# from decimal import Decimal
-# from django.db import transaction
-# from django.db.models.signals import post_save, pre_delete, pre_save, post_delete
-# from django.dispatch import receiver
-# from django.utils import timezone
-# from datetime import timedelta
+import logging
+from decimal import Decimal
+from django.db import transaction
+from django.db.models.signals import post_save, pre_delete, pre_save, post_delete
+from django.dispatch import receiver
+from django.utils import timezone
+from datetime import timedelta
 
-# from .models import (
-#     LedgerEntry, SalesIncome, OtherIncome, Booking,
-#     LaundryExpense, CleaningExpense, MessExpense, CafeteriaExpense,
-#     RentalExpense, SalaryExpense, MiscellaneousExpense,
-#     MaintenanceExpense, CapitalExpense, OtherExpense,
-# )
-# from .booking_service import BookingService
+from .models import (
+    LedgerEntry, SalesIncome, OtherIncome, Booking,
+    LaundryExpense, CleaningExpense, MessExpense, CafeteriaExpense,
+    RentalExpense, SalaryExpense, MiscellaneousExpense,
+    MaintenanceExpense, CapitalExpense, OtherExpense,
+)
+from .booking_service import BookingService
 
-# logger = logging.getLogger(__name__)
-
-
-# def _delete_existing_entries(source_type: str, source_id: int):
-#     """Helper: remove ledger rows linked to a source"""
-#     LedgerEntry.objects.filter(source_type=source_type, source_id=source_id).delete()
+logger = logging.getLogger(__name__)
 
 
-# @receiver(pre_save, sender=Booking)
-# def booking_pre_save_capture_old_paid(sender, instance, **kwargs):
-#     """Capture old paid_amount before save"""
-#     if not instance.pk:
-#         instance._old_paid_amount = Decimal("0.00")
-#         return
-
-#     try:
-#         old = sender.objects.get(pk=instance.pk)
-#         instance._old_paid_amount = old.paid_amount or Decimal("0.00")
-#     except sender.DoesNotExist:
-#         instance._old_paid_amount = Decimal("0.00")
+def _delete_existing_entries(source_type: str, source_id: int):
+    """Helper: remove ledger rows linked to a source"""
+    LedgerEntry.objects.filter(source_type=source_type, source_id=source_id).delete()
 
 
-# @receiver(post_save, sender=Booking)
-# def booking_post_save_cash_only(sender, instance, created, **kwargs):
-#     """Handle booking creation/updates and ledger entries"""
-#     source_type = "booking"
+@receiver(pre_save, sender=Booking)
+def booking_pre_save_capture_old_paid(sender, instance, **kwargs):
+    """Capture old paid_amount before save"""
+    if not instance.pk:
+        instance._old_paid_amount = Decimal("0.00")
+        return
 
-#     with transaction.atomic():
-#         calculated_pending = (instance.booking_price or Decimal("0.00")) - (instance.paid_amount or Decimal("0.00"))
-#         if instance.pending_amount != calculated_pending:
-#             Booking.objects.filter(pk=instance.pk).update(pending_amount=calculated_pending)
-#             instance.pending_amount = calculated_pending
+    try:
+        old = sender.objects.get(pk=instance.pk)
+        instance._old_paid_amount = old.paid_amount or Decimal("0.00")
+    except sender.DoesNotExist:
+        instance._old_paid_amount = Decimal("0.00")
 
-#         if created:
-#             if (instance.paid_amount or Decimal("0.00")) > Decimal("0.00"):
-#                 LedgerEntry.objects.create(
-#                     date=instance.booking_date or instance.checkin_date,
-#                     source_type=source_type,
-#                     source_id=instance.id,
-#                     description=f"Booking payment received ({instance.guest_name})",
-#                     credit=instance.paid_amount,
-#                     debit=Decimal("0.00"),
-#                 )
+
+@receiver(post_save, sender=Booking)
+def booking_post_save_cash_only(sender, instance, created, **kwargs):
+    """Handle booking creation/updates and ledger entries"""
+    source_type = "booking"
+
+    with transaction.atomic():
+        calculated_pending = (instance.booking_price or Decimal("0.00")) - (instance.paid_amount or Decimal("0.00"))
+        if instance.pending_amount != calculated_pending:
+            Booking.objects.filter(pk=instance.pk).update(pending_amount=calculated_pending)
+            instance.pending_amount = calculated_pending
+
+        if created:
+            if (instance.paid_amount or Decimal("0.00")) > Decimal("0.00"):
+                LedgerEntry.objects.create(
+                    date=instance.booking_date or instance.checkin_date,
+                    source_type=source_type,
+                    source_id=instance.id,
+                    description=f"Booking payment received ({instance.guest_name})",
+                    credit=instance.paid_amount,
+                    debit=Decimal("0.00"),
+                )
             
-#             # ✅ Schedule check-in reminder (NO CELERY)
-#             logger.info(f"📌 New booking created: {instance.id}")
-#             BookingService.schedule_checkin_reminder(instance)
-#             return
+            # ✅ Schedule check-in reminder (NO CELERY)
+            logger.info(f"📌 New booking created: {instance.id}")
+            BookingService.schedule_checkin_reminder(instance)
+            return
 
-#         old_paid = getattr(instance, "_old_paid_amount", Decimal("0.00"))
-#         new_paid = instance.paid_amount or Decimal("0.00")
-#         try:
-#             difference = (Decimal(new_paid) - Decimal(old_paid))
-#         except Exception:
-#             difference = Decimal("0.00")
+        old_paid = getattr(instance, "_old_paid_amount", Decimal("0.00"))
+        new_paid = instance.paid_amount or Decimal("0.00")
+        try:
+            difference = (Decimal(new_paid) - Decimal(old_paid))
+        except Exception:
+            difference = Decimal("0.00")
 
-#         if difference > Decimal("0.00"):
-#             LedgerEntry.objects.create(
-#                 date=instance.booking_date or instance.checkin_date,
-#                 source_type=source_type,
-#                 source_id=instance.id,
-#                 description=f"Booking payment received ({instance.guest_name})",
-#                 credit=difference,
-#                 debit=Decimal("0.00"),
-#             )
-
-
-# @receiver(pre_delete, sender=Booking)
-# def booking_pre_delete(sender, instance, **kwargs):
-#     """Clean up ledger entries on booking delete"""
-#     _delete_existing_entries("booking", instance.id)
-#     logger.info(f"🗑️ Booking deleted: {instance.id}")
+        if difference > Decimal("0.00"):
+            LedgerEntry.objects.create(
+                date=instance.booking_date or instance.checkin_date,
+                source_type=source_type,
+                source_id=instance.id,
+                description=f"Booking payment received ({instance.guest_name})",
+                credit=difference,
+                debit=Decimal("0.00"),
+            )
 
 
-# # ===== INCOME MODELS =====
-# @receiver(post_save, sender=SalesIncome)
-# def salesincome_post_save(sender, instance, **kwargs):
-#     source_type = "salesincome"
-#     with transaction.atomic():
-#         _delete_existing_entries(source_type, instance.id)
-#         LedgerEntry.objects.create(
-#             date=instance.date,
-#             source_type=source_type,
-#             source_id=instance.id,
-#             description=instance.description or f"Sales Income",
-#             credit=instance.amount or Decimal("0.00"),
-#             debit=Decimal("0.00"),
-#         )
+@receiver(pre_delete, sender=Booking)
+def booking_pre_delete(sender, instance, **kwargs):
+    """Clean up ledger entries on booking delete"""
+    _delete_existing_entries("booking", instance.id)
+    logger.info(f"🗑️ Booking deleted: {instance.id}")
 
 
-# @receiver(pre_delete, sender=SalesIncome)
-# def salesincome_pre_delete(sender, instance, **kwargs):
-#     _delete_existing_entries("salesincome", instance.id)
+# ===== INCOME MODELS =====
+@receiver(post_save, sender=SalesIncome)
+def salesincome_post_save(sender, instance, **kwargs):
+    source_type = "salesincome"
+    with transaction.atomic():
+        _delete_existing_entries(source_type, instance.id)
+        LedgerEntry.objects.create(
+            date=instance.date,
+            source_type=source_type,
+            source_id=instance.id,
+            description=instance.description or f"Sales Income",
+            credit=instance.amount or Decimal("0.00"),
+            debit=Decimal("0.00"),
+        )
 
 
-# @receiver(post_save, sender=OtherIncome)
-# def otherincome_post_save(sender, instance, **kwargs):
-#     source_type = "otherincome"
-#     with transaction.atomic():
-#         _delete_existing_entries(source_type, instance.id)
-#         LedgerEntry.objects.create(
-#             date=instance.date,
-#             source_type=source_type,
-#             source_id=instance.id,
-#             description=instance.description or f"Other Income",
-#             credit=instance.amount or Decimal("0.00"),
-#             debit=Decimal("0.00"),
-#         )
+@receiver(pre_delete, sender=SalesIncome)
+def salesincome_pre_delete(sender, instance, **kwargs):
+    _delete_existing_entries("salesincome", instance.id)
 
 
-# @receiver(pre_delete, sender=OtherIncome)
-# def otherincome_pre_delete(sender, instance, **kwargs):
-#     _delete_existing_entries("otherincome", instance.id)
+@receiver(post_save, sender=OtherIncome)
+def otherincome_post_save(sender, instance, **kwargs):
+    source_type = "otherincome"
+    with transaction.atomic():
+        _delete_existing_entries(source_type, instance.id)
+        LedgerEntry.objects.create(
+            date=instance.date,
+            source_type=source_type,
+            source_id=instance.id,
+            description=instance.description or f"Other Income",
+            credit=instance.amount or Decimal("0.00"),
+            debit=Decimal("0.00"),
+        )
 
 
-# # ===== EXPENSE MODELS =====
-# EXPENSE_MODELS = [
-#     (LaundryExpense, "laundryexpense"),
-#     (CleaningExpense, "cleaningexpense"),
-#     (MessExpense, "messexpense"),
-#     (CafeteriaExpense, "cafeteriaexpense"),
-#     (RentalExpense, "rentalexpense"),
-#     (SalaryExpense, "salaryexpense"),
-#     (MiscellaneousExpense, "miscexpense"),
-#     (MaintenanceExpense, "maintenanceexpense"),
-#     (CapitalExpense, "capitalexpense"),
-#     (OtherExpense, "otherexpense"),
-# ]
+@receiver(pre_delete, sender=OtherIncome)
+def otherincome_pre_delete(sender, instance, **kwargs):
+    _delete_existing_entries("otherincome", instance.id)
 
-# for model_class, source_type in EXPENSE_MODELS:
-#     def make_post_save(stype):
-#         @receiver(post_save, sender=model_class)
-#         def expense_post_save(sender, instance, **kwargs):
-#             with transaction.atomic():
-#                 _delete_existing_entries(stype, instance.id)
-#                 LedgerEntry.objects.create(
-#                     date=instance.date,
-#                     source_type=stype,
-#                     source_id=instance.id,
-#                     description=instance.description or f"{stype} expense",
-#                     debit=instance.amount or Decimal("0.00"),
-#                     credit=Decimal("0.00"),
-#                 )
-#         return expense_post_save
 
-#     def make_pre_delete(stype):
-#         @receiver(pre_delete, sender=model_class)
-#         def expense_pre_delete(sender, instance, **kwargs):
-#             _delete_existing_entries(stype, instance.id)
-#         return expense_pre_delete
+# ===== EXPENSE MODELS =====
+EXPENSE_MODELS = [
+    (LaundryExpense, "laundryexpense"),
+    (CleaningExpense, "cleaningexpense"),
+    (MessExpense, "messexpense"),
+    (CafeteriaExpense, "cafeteriaexpense"),
+    (RentalExpense, "rentalexpense"),
+    (SalaryExpense, "salaryexpense"),
+    (MiscellaneousExpense, "miscexpense"),
+    (MaintenanceExpense, "maintenanceexpense"),
+    (CapitalExpense, "capitalexpense"),
+    (OtherExpense, "otherexpense"),
+]
 
-#     make_post_save(source_type)
-#     make_pre_delete(source_type)
+for model_class, source_type in EXPENSE_MODELS:
+    def make_post_save(stype):
+        @receiver(post_save, sender=model_class)
+        def expense_post_save(sender, instance, **kwargs):
+            with transaction.atomic():
+                _delete_existing_entries(stype, instance.id)
+                LedgerEntry.objects.create(
+                    date=instance.date,
+                    source_type=stype,
+                    source_id=instance.id,
+                    description=instance.description or f"{stype} expense",
+                    debit=instance.amount or Decimal("0.00"),
+                    credit=Decimal("0.00"),
+                )
+        return expense_post_save
+
+    def make_pre_delete(stype):
+        @receiver(pre_delete, sender=model_class)
+        def expense_pre_delete(sender, instance, **kwargs):
+            _delete_existing_entries(stype, instance.id)
+        return expense_pre_delete
+
+    make_post_save(source_type)
+    make_pre_delete(source_type)
 
 
 
