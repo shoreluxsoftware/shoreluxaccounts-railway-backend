@@ -602,17 +602,31 @@ class DeleteBookingTypeAPIView(APIView):
 class CreateBookingAPIView(APIView):
     def post(self, request):
         data = request.data.copy()
-        data["source"] = 0  # ⭐ STAFF
+        
+        # 1. Get the actual name of the booking type if you're using a CharField in the model
+        try:
+            booking_type_obj = BookingTypeMaster.objects.get(id=data.get('booking_type'))
+            data['booking_type'] = booking_type_obj.name # Convert ID to Name string
+        except BookingTypeMaster.DoesNotExist:
+            return Response({"error": "Invalid Booking Type ID"}, status=400)
 
         serializer = BookingSerializer(data=data)
+        
         if serializer.is_valid():
-            serializer.save()
-            return Response(
-                {"message": "Booking added", "data": serializer.data},
-                status=201
-            )
+            try:
+                # 2. Pass 'source' here because it is read_only in the serializer
+                serializer.save(source=0) 
+                return Response(
+                    {"message": "Booking added", "data": serializer.data},
+                    status=201
+                )
+            except Exception as e:
+                # This will catch the 'BookingService' error if it's happening during save
+                return Response({"error": str(e)}, status=500)
 
         return Response(serializer.errors, status=400)
+
+        
 
 class BookingListAPIView(APIView):
     permission_classes = [AllowAny]

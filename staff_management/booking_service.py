@@ -65,7 +65,26 @@ class BookingService:
             logger.error(f"Fetch failed: {str(e)}")
             return False, str(e)
 
+# staff_management/booking_service.py
 
+class BookingService:
+    """Fetch bookings from external website"""
+
+    @staticmethod
+    def fetch_website_bookings():
+        # ... (keep your existing code here) ...
+        pass
+
+    # 🟢 ADD THIS METHOD TO STOP THE CRASH
+    @staticmethod
+    def schedule_checkin_reminder(instance):
+        """
+        Placeholder for scheduling reminders.
+        This stops the 500 error in signals.py.
+        """
+        logger.info(f"⏰ Reminder logic triggered for Booking ID: {instance.id}")
+        # Later, you can add SMS or Email logic here
+        return True
 
 # import logging
 # import requests
