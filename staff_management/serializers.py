@@ -213,21 +213,42 @@ class BookingFetchSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def get_booking_type_name(self, obj):
-        try:
-            return BookingTypeMaster.objects.get(id=obj.booking_type).name
-        except BookingTypeMaster.DoesNotExist:
+        # If booking_type is a string name, just return it
+        # If it's an ID stored as a string, fetch the name
+        if not obj.booking_type:
             return None
+        
+        try:
+            # Try treating it as an ID/FK first
+            return obj.booking_type.name
+        except AttributeError:
+            # If it's just a string, return the string itself
+            return str(obj.booking_type)
 
     def get_gst_percentage(self, obj):
         try:
-            return BookingTypeMaster.objects.get(id=obj.booking_type).gst_percentage
-        except BookingTypeMaster.DoesNotExist:
-            return None
+            # We need to find the actual Master record to get the percentage
+            # This logic works whether booking_type is an ID or a Name string
+            master = None
+            if hasattr(obj.booking_type, 'id'):
+                master = obj.booking_type
+            else:
+                # Search by name or ID depending on what's in your DB
+                master = BookingTypeMaster.objects.filter(name=obj.booking_type).first() or \
+                         BookingTypeMaster.objects.filter(id=obj.booking_type).first()
+            
+            return master.gst_percentage if master else 0
+        except Exception:
+            return 0
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
+        # Clean up the output for the React frontend
         data["booking_type"] = data.pop("booking_type_name", None)
         return data
+
+
+        
 
 class WebsiteBookingFetchSerializer(serializers.ModelSerializer):
     booking_source_label = serializers.CharField(
