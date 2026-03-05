@@ -14,7 +14,7 @@ from admin_management.models import OTPVerification
 from rest_framework.permissions import IsAuthenticated
 from admin_management.models import *
 
-
+from rest_framework.generics import get_object_or_404
 
 
 from django.db.models import Sum
@@ -344,6 +344,27 @@ class ListOtherIncomeAPIView(APIView):
         incomes = OtherIncome.objects.all()
         serializer = OtherIncomeSerializer(incomes, many=True)
         return Response({"data": serializer.data}, status=200)
+
+
+
+        # -----------------------
+# DELETE OTHER INCOME API
+# -----------------------
+class DeleteOtherIncomeAPIView(APIView):
+    def delete(self, request, pk):
+        # 🛡️ Uncomment below if you want OTP protection for deletes
+        # is_verified, error = verify_otp_for_edit(request, 'other_income_delete')
+        # if not is_verified:
+        #     return Response({"error": error}, status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            income = OtherIncome.objects.get(pk=pk)
+            income.delete()
+            return Response({"message": "Other income record deleted successfully"}, status=200)
+        except OtherIncome.DoesNotExist:
+            return Response({"error": "Other income record not found"}, status=404)
+        except Exception as e:
+            return Response({"error": str(e)}, status=400)
     
 # -----------------------
 # SALES INCOME APIs
@@ -365,6 +386,25 @@ class ListSalesIncomeAPIView(APIView):
         serializer = SalesIncomeSerializer(sales, many=True)
         return Response({"data": serializer.data}, status=200)
     
+
+# -----------------------
+# DELETE SALES INCOME API
+# -----------------------
+class DeleteSalesIncomeAPIView(APIView):
+    def delete(self, request, pk):
+        # 🛡️ Optional: Verify OTP if you want deletion to be as secure as editing
+        # is_verified, error = verify_otp_for_edit(request, 'sales_income_delete')
+        # if not is_verified:
+        #     return Response({"error": error}, status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            sale = SalesIncome.objects.get(pk=pk)
+            sale.delete()
+            return Response({"message": "Sales income record deleted successfully"}, status=200)
+        except SalesIncome.DoesNotExist:
+            return Response({"error": "Sales income record not found"}, status=404)
+        except Exception as e:
+            return Response({"error": str(e)}, status=400)
 
 ###################### otp edit #############
 
@@ -394,13 +434,16 @@ def verify_otp_for_edit(request, verification_type):
 # ===================================
 class UpdateExpenseAPIView(APIView):
     def put(self, request, pk):
-        # Verify OTP first
-        is_verified, error = verify_otp_for_edit(request, 'expense_edit')
-        if not is_verified:
-            return Response({"error": error}, status=status.HTTP_403_FORBIDDEN)
+        # 🔥 ADMIN BYPASS - Skip OTP for Admin
+        user_role = getattr(request.user, 'role', None) if request.user.is_authenticated else None
+        is_admin = user_role == 'ADMIN'
+        
+        if not is_admin:
+            is_verified, error = verify_otp_for_edit(request, 'expense_edit')
+            if not is_verified:
+                return Response({"error": error}, status=status.HTTP_403_FORBIDDEN)
         
         category = request.data.get("category")
-
         if category not in CATEGORY_MODEL_MAP:
             return Response({"error": "Invalid category"}, status=400)
 
@@ -474,6 +517,9 @@ class UpdateOtherIncomeAPIView(APIView):
 
 
 
+
+
+
 ####################### views.py ########################
 # ------------------------------------
 # 1. API → Get next voucher number
@@ -507,7 +553,22 @@ class ListPaymentVouchersAPIView(APIView):
         serializer = PaymentVoucherSerializer(vouchers, many=True)
         return Response({"data": serializer.data}, status=200)
 
-
+# ------------------------------------
+# 4. Delete voucher
+# ------------------------------------
+class DeletePaymentVoucherAPIView(APIView):
+    # Usually, you only want Admins to delete stuff, but I'll keep it 
+    # open if that's how your project is currently set up.
+    
+    def delete(self, request, pk):
+        # Find the voucher or return 404 if it's already gone
+        voucher = get_object_or_404(PaymentVoucher, pk=pk)
+        
+        try:
+            voucher.delete()
+            return Response({"message": "Voucher deleted successfully"}, status=200)
+        except Exception as e:
+            return Response({"error": str(e)}, status=400)
 
 # ----------------------- 
 #  EXPENSE APIs 
@@ -554,6 +615,39 @@ class ExpenseListAPIView(APIView):
                 })
         all_data = sorted(all_data, key=lambda x: x["id"], reverse=True)
         return Response({"data": all_data}, status=200)
+
+
+
+# ----------------------- 
+# DELETE EXPENSE API
+# -----------------------
+class DeleteExpenseAPIView(APIView):
+    def delete(self, request, pk):
+        # Optional: You can add OTP verification here similar to UpdateExpenseAPIView
+        # is_verified, error = verify_otp_for_edit(request, 'expense_delete')
+        # if not is_verified:
+        #     return Response({"error": error}, status=status.HTTP_403_FORBIDDEN)
+
+        # We need the category to know which Model to look in
+        category = request.data.get("category") or request.query_params.get("category")
+
+        if not category:
+            return Response({"error": "Category is required to delete the record"}, status=400)
+
+        if category not in CATEGORY_MODEL_MAP:
+            return Response({"error": "Invalid category"}, status=400)
+
+        ModelClass, _ = CATEGORY_MODEL_MAP[category]
+
+        try:
+            obj = ModelClass.objects.get(pk=pk)
+            obj.delete()
+            return Response({"message": f"Record deleted from {category} successfully"}, status=200)
+        except ModelClass.DoesNotExist:
+            return Response({"error": "Record not found"}, status=404)
+        except Exception as e:
+            return Response({"error": str(e)}, status=400)
+
 
 # -----------------------
 # BOOKING APIs
@@ -952,6 +1046,20 @@ class UpdateCafeteriaExpenseAPIView(APIView):
 
         return Response(serializer.errors, status=400)
 
+
+# ------------------------
+# Delete cafeteria expense
+# ------------------------
+class DeleteCafeteriaExpenseAPIView(APIView):
+    def delete(self, request, pk):
+        try:
+            expense = CafeteriaExpense.objects.get(pk=pk)
+            expense.delete()
+            return Response({"message": "Cafeteria expense deleted successfully"}, status=200)
+        except CafeteriaExpense.DoesNotExist:
+            return Response({"error": "Record not found"}, status=404)
+        except Exception as e:
+            return Response({"error": str(e)}, status=400)
 
 #-------------------------------------
 #salary expense api

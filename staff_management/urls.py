@@ -34,12 +34,13 @@ urlpatterns = [
     path('other-income', CreateOtherIncomeAPIView.as_view(), name="other-income"),
     path('list-other-income', ListOtherIncomeAPIView.as_view(), name="list-other-income"),
     path('update-other-income/<int:pk>', UpdateOtherIncomeAPIView.as_view(), name="update-other-income"),
-
+    path('delete-other-income/<int:pk>', DeleteOtherIncomeAPIView.as_view(), name="delete-other-income"),
+    
 # sales income URLs
     path('sales-income', CreateSalesIncomeAPIView.as_view(), name="sales-income"),
     path('list-sales-income', ListSalesIncomeAPIView.as_view(), name="list-sales-income"),
     path('update-sales-income/<int:pk>', UpdateSalesIncomeAPIView.as_view(), name="update-sales-income"),
-
+    path('delete-sales-income/<int:pk>', DeleteSalesIncomeAPIView.as_view(), name="delete-sales-income"),
 
    #################### urls.py ################
 
@@ -47,7 +48,8 @@ urlpatterns = [
     path('generate-payment-voucher', NextVoucherNumberAPIView.as_view(), name="create-payment-voucher"),
     path('create-payment-voucher',CreatePaymentVoucherAPIView.as_view(), name="create-payment-voucher"),
     path('list-payment-vouchers',ListPaymentVouchersAPIView.as_view(), name="list-payment-vouchers"),
-
+# Add this to your existing payment voucher URLs
+path('delete-payment-voucher/<int:pk>/', DeletePaymentVoucherAPIView.as_view(), name="delete-payment-voucher"),
 
 
 
@@ -56,7 +58,7 @@ urlpatterns = [
     path('add-expense', CreateExpenseAPIView.as_view(), name="add-expense"),
     path('list-expenses', ExpenseListAPIView.as_view(), name="list-expenses"),
     path('update-expense/<int:pk>', UpdateExpenseAPIView.as_view(), name="update-expense"),
-
+    path('delete-expense/<int:pk>', DeleteExpenseAPIView.as_view(), name="delete-expense"),
 
 
 
@@ -101,7 +103,7 @@ urlpatterns = [
     path('create-cafeteria-expense', CreateCafeteriaExpenseAPIView.as_view(), name="create-cafeteria-expense"),
     path('list-cafeteria-expenses', CafeteriaExpenseListAPIView.as_view(), name="list-cafeteria-expenses"),
     path('update-cafeteria-expense/<int:pk>', UpdateCafeteriaExpenseAPIView.as_view(), name="update-cafeteria-expense"),
-
+    path('delete-cafeteria-expense/<int:pk>', DeleteCafeteriaExpenseAPIView.as_view(), name="delete-cafeteria-expense"),
 
 
 
