@@ -434,16 +434,13 @@ def verify_otp_for_edit(request, verification_type):
 # ===================================
 class UpdateExpenseAPIView(APIView):
     def put(self, request, pk):
-        # 🔥 ADMIN BYPASS - Skip OTP for Admin
-        user_role = getattr(request.user, 'role', None) if request.user.is_authenticated else None
-        is_admin = user_role == 'ADMIN'
-        
-        if not is_admin:
-            is_verified, error = verify_otp_for_edit(request, 'expense_edit')
-            if not is_verified:
-                return Response({"error": error}, status=status.HTTP_403_FORBIDDEN)
+        # Verify OTP first
+        is_verified, error = verify_otp_for_edit(request, 'expense_edit')
+        if not is_verified:
+            return Response({"error": error}, status=status.HTTP_403_FORBIDDEN)
         
         category = request.data.get("category")
+
         if category not in CATEGORY_MODEL_MAP:
             return Response({"error": "Invalid category"}, status=400)
 
