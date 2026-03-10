@@ -25,9 +25,10 @@ class StaffManagementConfig(AppConfig):
         if any(cmd in sys.argv for cmd in blocked_commands):
             return
 
-         # ONLY control scheduler here
-        if "runserver" in sys.argv and os.environ.get("RUN_MAIN") != "true":
+        # 3. Only run scheduler in the main thread
+        if os.environ.get("RUN_MAIN") != "true":
             return
+
         try:
             from apscheduler.schedulers.background import BackgroundScheduler
             from django_apscheduler.jobstores import DjangoJobStore
