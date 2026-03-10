@@ -24,32 +24,50 @@ class CreateStaffAPIView(APIView):
 
     def post(self, request):
         data = request.data
-
+        
         try:
-            with transaction.atomic():
-                staff = User.objects.create(
-                    first_name=data.get('first_name', ''),
-                    last_name=data.get('last_name', ''),
-                    phone_number=data.get('phone_number'),
-                    aadhaar_number=data.get('aadhaar_number'),
-                    age=data.get('age'),
-                    role="STAFF",
-                    can_login=False,   # 🔑 IMPORTANT
-                    aadhaar_card=data.get('aadhaar_card'),
-                    profile_image=data.get('profile_image'),
-                )
-        except IntegrityError:
-            return Response(
-                {"detail": "Aadhaar number already exists."},
-                status=status.HTTP_400_BAD_REQUEST
+            staff = User.objects.create(
+                first_name=data.get('first_name', ''),
+                last_name=data.get('last_name', ''),
+                phone_number=data.get('phone_number', ''),
+                aadhaar_number=data.get('aadhaar_number', ''),
+                age=data.get('age', None),
+                role="STAFF",
+                can_login=False,
+                aadhaar_card=data.get('aadhaar_card'),
+                profile_image=data.get('profile_image'),
+                # 🔥 username = NULL/empty - user enters LATER when enabling login
             )
-
-        return Response({
-            "message": "Staff created successfully",
-            "staff_unique_id": staff.staff_unique_id,
-            "id": staff.id
-        }, status=status.HTTP_201_CREATED)
-
+            
+            return Response({
+                "message": "Staff created successfully",
+                "staff_unique_id": staff.staff_unique_id,
+                "id": staff.id
+            }, status=status.HTTP_201_CREATED)
+            
+        except IntegrityError:
+            # 🔥 If username conflict → try with temp unique username
+            staff_count = User.objects.filter(role="STAFF").count() + 1
+            temp_username = f"staff_temp_{staff_count:04d}"
+            
+            staff = User.objects.create(
+                username=temp_username,
+                first_name=data.get('first_name', ''),
+                last_name=data.get('last_name', ''),
+                phone_number=data.get('phone_number', ''),
+                aadhaar_number=data.get('aadhaar_number', ''),
+                age=data.get('age', None),
+                role="STAFF",
+                can_login=False,
+                aadhaar_card=data.get('aadhaar_card'),
+                profile_image=data.get('profile_image'),
+            )
+            
+            return Response({
+                "message": "Staff created successfully (temp username assigned)",
+                "staff_unique_id": staff.staff_unique_id,
+                "id": staff.id
+            }, status=status.HTTP_201_CREATED)
 
 
 class ListStaffAPIView(APIView):
@@ -183,22 +201,19 @@ class EnableLoginForStaffAPIView(APIView):
 class DisableLoginForStaffAPIView(APIView):
     permission_classes = [IsAdminUser]
 
-    def patch(self, request, pk):
+    def post(self, request, pk):  # 🔥 CHANGE: post ← patch
         try:
             staff = User.objects.get(pk=pk, role="STAFF")
         except User.DoesNotExist:
-            return Response(
-                {"detail": "Staff not found"},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({"detail": "Staff not found"}, status=404)
 
         staff.can_login = False
-        staff.save(update_fields=["can_login"])
+        staff.username = ""  # 🔥 CLEAR username too!
+        staff.save(update_fields=["can_login", "username"])
 
-        return Response(
-            {"message": "Login access disabled successfully"},
-            status=status.HTTP_200_OK
-        )
+        return Response({
+            "message": "Login access disabled successfully"
+        })
 
 
 from decimal import Decimal
