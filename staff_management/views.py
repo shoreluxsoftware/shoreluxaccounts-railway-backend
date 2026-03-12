@@ -590,11 +590,10 @@ class CreateExpenseAPIView(APIView):
 
         return Response(serializer.errors, status=400)
 
-
 class ExpenseListAPIView(APIView):
     permission_classes = [AllowAny]
 
-    def get(self, request):
+    def get(self, request):  # 🔥 MUST BE INDENTED UNDER CLASS
         all_data = []
 
         for category, (ModelClass, SerializerClass) in CATEGORY_MODEL_MAP.items():
@@ -606,14 +605,15 @@ class ExpenseListAPIView(APIView):
                     "date": obj.date,
                     "amount": obj.amount,
                     "description": obj.description,
+                    "staff_code": getattr(obj, 'staff_code', None),
                     "voucher_no": getattr(obj, 'voucher_no', None),
-                    "staff_code": getattr(obj, 'staff_code', None),  # 🔥 ADD THIS
+                    "designation": getattr(obj, 'designation', None),
+                    "salary_type": getattr(obj, 'salary_type', None),
                     "bill_file": obj.bill_file.url if obj.bill_file else None,
                     "voucher_file": obj.voucher_file.url if obj.voucher_file else None,
                 })
         all_data = sorted(all_data, key=lambda x: x["id"], reverse=True)
         return Response({"data": all_data}, status=200)
-
 
 # ----------------------- 
 # DELETE EXPENSE API
@@ -1061,70 +1061,70 @@ class DeleteCafeteriaExpenseAPIView(APIView):
 #-------------------------------------
 #salary expense api
 #-------------------------------------
-class CreateSalaryExpenseAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+# class CreateSalaryExpenseAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
 
-    def post(self, request):
-        serializer = SalaryExpenseSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({
-                "message": "Salary expense added",
-                "data": serializer.data
-            }, status=status.HTTP_201_CREATED)
+#     def post(self, request):
+#         serializer = SalaryExpenseSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response({
+#                 "message": "Salary expense added",
+#                 "data": serializer.data
+#             }, status=status.HTTP_201_CREATED)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class SalaryExpenseListAPIView(APIView):
-    permission_classes = [AllowAny]
-
-    def get(self, request):
-        expenses = SalaryExpense.objects.all().order_by("-id")
-
-        data = []
-        for exp in expenses:
-            data.append({
-                "id": exp.id,
-                "category": "Salary",
-                "date": exp.date,
-                "amount": exp.amount,
-                "staff_code": exp.staff_code,
-                "description": exp.description,
-                "voucher_no": exp.voucher_no,
-                "bill_file": exp.bill_file.url if exp.bill_file else None,
-                "voucher_file": exp.voucher_file.url if exp.voucher_file else None,
-            })
-
-        return Response({"data": data}, status=status.HTTP_200_OK)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UpdateSalaryExpenseAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+# class SalaryExpenseListAPIView(APIView):
+#     permission_classes = [AllowAny]
 
-    def put(self, request, pk):
-        try:
-            expense = SalaryExpense.objects.get(pk=pk)
-        except SalaryExpense.DoesNotExist:
-            return Response(
-                {"error": "Salary expense not found"},
-                status=status.HTTP_404_NOT_FOUND
-            )
+#     def get(self, request):
+#         expenses = SalaryExpense.objects.all().order_by("-id")
 
-        serializer = SalaryExpenseSerializer(
-            expense,
-            data=request.data,
-            partial=True
-        )
+#         data = []
+#         for exp in expenses:
+#             data.append({
+#                 "id": exp.id,
+#                 "category": "Salary",
+#                 "date": exp.date,
+#                 "amount": exp.amount,
+#                 "staff_code": exp.staff_code,
+#                 "description": exp.description,
+#                 "voucher_no": exp.voucher_no,
+#                 "bill_file": exp.bill_file.url if exp.bill_file else None,
+#                 "voucher_file": exp.voucher_file.url if exp.voucher_file else None,
+#             })
 
-        if serializer.is_valid():
-            serializer.save()
-            return Response({
-                "message": "Salary expense updated",
-                "data": serializer.data
-            })
+#         return Response({"data": data}, status=status.HTTP_200_OK)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# class UpdateSalaryExpenseAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def put(self, request, pk):
+#         try:
+#             expense = SalaryExpense.objects.get(pk=pk)
+#         except SalaryExpense.DoesNotExist:
+#             return Response(
+#                 {"error": "Salary expense not found"},
+#                 status=status.HTTP_404_NOT_FOUND
+#             )
+
+#         serializer = SalaryExpenseSerializer(
+#             expense,
+#             data=request.data,
+#             partial=True
+#         )
+
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response({
+#                 "message": "Salary expense updated",
+#                 "data": serializer.data
+#             })
+
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 #-------------------------------

@@ -40,6 +40,8 @@ class User(AbstractUser):
 
     staff_unique_id = models.CharField(max_length=30, unique=True, null=True, blank=True)
 
+    designation = models.CharField(max_length=100, blank=True, null=True) # ✅ NEW FIELD
+
     is_active_employee = models.BooleanField(default=True)
 
     objects = CustomUserManager()

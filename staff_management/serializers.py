@@ -150,6 +150,8 @@ class MessExpenseSerializer(BaseExpenseSerializer):
 
 class SalaryExpenseSerializer(BaseExpenseSerializer):
     staff_code = serializers.CharField(required=True)
+    designation = serializers.CharField(required=True)  # 🔥 NEW
+    salary_type = serializers.CharField(required=True)  # 🔥 NEW
 
     class Meta(BaseExpenseSerializer.Meta):
         model = SalaryExpense
@@ -273,6 +275,8 @@ class LedgerEntrySerializer(serializers.ModelSerializer):
             "id", "date", "source_type", "source_id", "description",
             "debit", "credit", "created_at"
         ]
+
+
 
 
 

@@ -36,6 +36,7 @@ class CreateStaffAPIView(APIView):
                 can_login=False,
                 aadhaar_card=data.get('aadhaar_card'),
                 profile_image=data.get('profile_image'),
+                designation=data.get('designation', ''),
                 # 🔥 username = NULL/empty - user enters LATER when enabling login
             )
             
@@ -53,6 +54,7 @@ class CreateStaffAPIView(APIView):
             staff = User.objects.create(
                 username=temp_username,
                 first_name=data.get('first_name', ''),
+                designation=data.get('designation', ''),
                 last_name=data.get('last_name', ''),
                 phone_number=data.get('phone_number', ''),
                 aadhaar_number=data.get('aadhaar_number', ''),
@@ -100,6 +102,7 @@ class ListStaffAPIView(APIView):
                 "last_name": staff.last_name,
                 "phone_number": staff.phone_number,
                 "aadhaar_number": staff.aadhaar_number,
+                "designation": staff.designation,
                 "age": staff.age,
                 "aadhaar_card": aadhaar_url,
                 "profile_image": profile_url,
@@ -143,6 +146,7 @@ class UpdateStaffAPIView(APIView):
         data = request.data
         staff.first_name = data.get('first_name', staff.first_name)
         staff.last_name = data.get('last_name', staff.last_name)
+        staff.designation = data.get('designation', staff.designation) # ✅
         staff.phone_number = data.get('phone_number', staff.phone_number)
         staff.age = data.get('age', staff.age)
 
@@ -157,6 +161,7 @@ class UpdateStaffAPIView(APIView):
             "message": "Staff member updated successfully.",
             "staff_unique_id": staff.staff_unique_id,
             "username": staff.username,
+            "designation": staff.designation,
             "first_name": staff.first_name,
             "last_name": staff.last_name,
             "phone_number": staff.phone_number,
