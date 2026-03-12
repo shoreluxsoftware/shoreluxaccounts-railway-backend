@@ -606,13 +606,13 @@ class ExpenseListAPIView(APIView):
                     "date": obj.date,
                     "amount": obj.amount,
                     "description": obj.description,
-                    "voucher_no": obj.voucher_no,
+                    "voucher_no": getattr(obj, 'voucher_no', None),
+                    "staff_code": getattr(obj, 'staff_code', None),  # 🔥 ADD THIS
                     "bill_file": obj.bill_file.url if obj.bill_file else None,
                     "voucher_file": obj.voucher_file.url if obj.voucher_file else None,
                 })
         all_data = sorted(all_data, key=lambda x: x["id"], reverse=True)
         return Response({"data": all_data}, status=200)
-
 
 
 # ----------------------- 
