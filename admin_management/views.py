@@ -677,3 +677,4 @@ class VerifyOTPAPIView(APIView):
             "verified": True
         }, status=status.HTTP_200_OK)
 
+

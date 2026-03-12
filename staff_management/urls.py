@@ -111,9 +111,9 @@ path('delete-payment-voucher/<int:pk>/', DeletePaymentVoucherAPIView.as_view(), 
 
     ################## urls.py #######################
 # salary expense URLs
-    path('create-salary-expense', CreateSalaryExpenseAPIView.as_view(), name="create-salary-expense"),
-    path('list-salary-expenses', SalaryExpenseListAPIView.as_view(), name="list-salary-expenses"),
-    path('update-salary-expense/<int:pk>', UpdateSalaryExpenseAPIView.as_view(), name="update-salary-expense"),
+    # path('create-salary-expense', CreateSalaryExpenseAPIView.as_view(), name="create-salary-expense"),
+    # path('list-salary-expenses', SalaryExpenseListAPIView.as_view(), name="list-salary-expenses"),
+    # path('update-salary-expense/<int:pk>', UpdateSalaryExpenseAPIView.as_view(), name="update-salary-expense"),
 
 
     path('monthly-ledger-summary',MonthlyLedgerSummaryAPIView.as_view(), name="monthly-ledger-summary"),

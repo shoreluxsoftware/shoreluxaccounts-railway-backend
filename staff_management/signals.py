@@ -130,6 +130,73 @@ def cleaning_post_save(sender, instance, **kwargs):
 def cleaning_pre_delete(sender, instance, **kwargs):
     _delete_existing_entries("cleaningexpense", instance.id)
 
+@receiver(post_save, sender=SalaryExpense)
+def salary_post_save(sender, instance, **kwargs):
+    _handle_expense_save("salaryexpense", instance)  # ✅ Creates ledger entry
+
+@receiver(pre_delete, sender=SalaryExpense)
+def salary_pre_delete(sender, instance, **kwargs):
+    _delete_existing_entries("salaryexpense", instance.id)
+
+    # 🔥 ADD THESE MISSING SIGNALS (after your existing ones):
+
+@receiver(post_save, sender=MessExpense)
+def mess_post_save(sender, instance, **kwargs):
+    _handle_expense_save("mess", instance)
+
+@receiver(pre_delete, sender=MessExpense)
+def mess_pre_delete(sender, instance, **kwargs):
+    _delete_existing_entries("mess", instance.id)
+
+@receiver(post_save, sender=CafeteriaExpense)
+def cafeteria_post_save(sender, instance, **kwargs):
+    _handle_expense_save("cafeteria", instance)
+
+@receiver(pre_delete, sender=CafeteriaExpense)
+def cafeteria_pre_delete(sender, instance, **kwargs):
+    _delete_existing_entries("cafeteria", instance.id)
+
+@receiver(post_save, sender=RentalExpense)
+def rental_post_save(sender, instance, **kwargs):
+    _handle_expense_save("rental", instance)
+
+@receiver(pre_delete, sender=RentalExpense)
+def rental_pre_delete(sender, instance, **kwargs):
+    _delete_existing_entries("rental", instance.id)
+
+@receiver(post_save, sender=MiscellaneousExpense)
+def miscellaneous_post_save(sender, instance, **kwargs):
+    _handle_expense_save("miscellaneous", instance)
+
+@receiver(pre_delete, sender=MiscellaneousExpense)
+def miscellaneous_pre_delete(sender, instance, **kwargs):
+    _delete_existing_entries("miscellaneous", instance.id)
+
+@receiver(post_save, sender=MaintenanceExpense)
+def maintenance_post_save(sender, instance, **kwargs):
+    _handle_expense_save("maintenance", instance)
+
+@receiver(pre_delete, sender=MaintenanceExpense)
+def maintenance_pre_delete(sender, instance, **kwargs):
+    _delete_existing_entries("maintenance", instance.id)
+
+@receiver(post_save, sender=CapitalExpense)
+def capital_post_save(sender, instance, **kwargs):
+    _handle_expense_save("capital", instance)
+
+@receiver(pre_delete, sender=CapitalExpense)
+def capital_pre_delete(sender, instance, **kwargs):
+    _delete_existing_entries("capital", instance.id)
+
+@receiver(post_save, sender=OtherExpense)
+def other_post_save(sender, instance, **kwargs):
+    _handle_expense_save("other", instance)
+
+@receiver(pre_delete, sender=OtherExpense)
+def other_pre_delete(sender, instance, **kwargs):
+    _delete_existing_entries("other", instance.id)
+
+
 # ... Repeat pattern for all: MessExpense, CafeteriaExpense, RentalExpense, SalaryExpense, 
 # MiscellaneousExpense, MaintenanceExpense, CapitalExpense, OtherExpense
 
